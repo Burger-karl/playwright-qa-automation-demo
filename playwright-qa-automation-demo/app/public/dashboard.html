@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard | Demo Ops Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1 id="welcome">Loading…</h1>
+      <p class="muted">Role: <span id="role"></span></p>
+
+      <nav aria-label="Main">
+        <a href="/onboarding.html">Onboard an applicant</a>
+        <a href="/admin.html" id="admin-link" hidden>Admin panel</a>
+      </nav>
+
+      <button type="button" class="secondary" id="logout">Sign out</button>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script>
+    (async () => {
+      const user = await requireUser();
+      if (!user) return;
+      document.getElementById('welcome').textContent = `Welcome, ${user.name}`;
+      document.getElementById('role').textContent = user.role;
+      // Only admins see the admin link. The API enforces this too.
+      document.getElementById('admin-link').hidden = user.role !== 'admin';
+    })();
+
+    document.getElementById('logout').addEventListener('click', logout);
+  </script>
+</body>
+</html>

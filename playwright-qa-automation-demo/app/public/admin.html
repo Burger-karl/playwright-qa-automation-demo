@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Demo Ops Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Admin panel</h1>
+      <div id="admin-error" class="alert alert-error" role="alert"></div>
+
+      <section id="admin-content" hidden>
+        <p>Applicants received: <strong id="applicant-count">0</strong></p>
+        <table aria-label="Users">
+          <thead>
+            <tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th></tr>
+          </thead>
+          <tbody id="user-rows"></tbody>
+        </table>
+      </section>
+
+      <nav><a href="/dashboard.html">Back to dashboard</a></nav>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script>
+    (async () => {
+      const { status, data } = await api('/api/admin/users');
+      if (status === 401) {
+        window.location.href = '/login.html';
+        return;
+      }
+      if (status === 403) {
+        document.getElementById('admin-error').textContent =
+          'You do not have permission to view this page.';
+        return;
+      }
+      document.getElementById('applicant-count').textContent = data.applicantCount;
+      const rows = document.getElementById('user-rows');
+      for (const user of data.users) {
+        const tr = document.createElement('tr');
+        for (const value of [user.name, user.email, user.role]) {
+          const td = document.createElement('td');
+          td.textContent = value;
+          tr.appendChild(td);
+        }
+        rows.appendChild(tr);
+      }
+      document.getElementById('admin-content').hidden = false;
+    })();
+  </script>
+</body>
+</html>

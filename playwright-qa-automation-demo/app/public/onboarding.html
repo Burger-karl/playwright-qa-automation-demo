@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Applicant onboarding | Demo Ops Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Applicant onboarding</h1>
+      <p class="muted">Register a new applicant for a programme track.</p>
+
+      <div id="form-success" class="alert alert-success" role="status"></div>
+      <div id="form-error" class="alert alert-error" role="alert"></div>
+
+      <form id="onboarding-form" novalidate>
+        <div class="field">
+          <label for="fullName">Full name</label>
+          <input id="fullName" name="fullName" type="text" aria-describedby="fullName-error">
+          <p id="fullName-error" class="field-error"></p>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" aria-describedby="email-error">
+          <p id="email-error" class="field-error"></p>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" placeholder="+2348012345678" aria-describedby="phone-error">
+          <p id="phone-error" class="field-error"></p>
+        </div>
+        <div class="field">
+          <label for="track">Track</label>
+          <select id="track" name="track" aria-describedby="track-error">
+            <option value="">Select a track</option>
+            <option value="creator">Creator</option>
+            <option value="sales">Sales</option>
+            <option value="operations">Operations</option>
+          </select>
+          <p id="track-error" class="field-error"></p>
+        </div>
+        <div class="field">
+          <label class="checkbox" for="consent">
+            <input id="consent" name="consent" type="checkbox" aria-describedby="consent-error">
+            I agree to the programme terms
+          </label>
+          <p id="consent-error" class="field-error"></p>
+        </div>
+        <button type="submit">Submit application</button>
+      </form>
+
+      <nav><a href="/dashboard.html">Back to dashboard</a></nav>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script>
+    const form = document.getElementById('onboarding-form');
+    const button = form.querySelector('button[type="submit"]');
+    const successEl = document.getElementById('form-success');
+    const errorEl = document.getElementById('form-error');
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const PHONE_RE = /^\+?[0-9]{10,14}$/;
+
+    requireUser();
+
+    function readForm() {
+      return {
+        fullName: form.fullName.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim().replace(/[\s-]/g, ''),
+        track: form.track.value,
+        consent: form.consent.checked,
+      };
+    }
+
+    // Mirrors the server rules so users get instant feedback.
+    // The server still validates everything; this is only a convenience.
+    function validate(values) {
+      const errors = {};
+      if (values.fullName.length < 2) errors.fullName = 'Full name is required.';
+      if (!EMAIL_RE.test(values.email)) errors.email = 'Enter a valid email address.';
+      if (!PHONE_RE.test(values.phone)) errors.phone = 'Enter a valid phone number (10 to 14 digits).';
+      if (!values.track) errors.track = 'Select a track.';
+      if (!values.consent) errors.consent = 'You must accept the terms.';
+      return errors;
+    }
+
+    function showErrors(errors) {
+      for (const [field, message] of Object.entries(errors)) {
+        setFieldError(form, field, message);
+      }
+      const first = Object.keys(errors)[0];
+      if (first) form.elements[first].focus();
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (button.disabled) return; // guards against double submission
+
+      successEl.textContent = '';
+      errorEl.textContent = '';
+      clearFieldErrors(form);
+
+      const values = readForm();
+      const errors = validate(values);
+      if (Object.keys(errors).length) {
+        showErrors(errors);
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Submitting…';
+      try {
+        const { status, data } = await api('/api/applicants', {
+          method: 'POST',
+          body: JSON.stringify(values),
+        });
+
+        if (status === 201) {
+          successEl.textContent = `Application received for ${data.applicant.fullName}.`;
+          form.reset();
+        } else if (status === 400 || status === 409) {
+          showErrors(data.fields || {});
+          if (!data.fields) errorEl.textContent = data.error;
+        } else if (status === 401) {
+          window.location.href = '/login.html';
+        } else {
+          errorEl.textContent = 'Something went wrong. Please try again.';
+        }
+      } catch {
+        errorEl.textContent = 'Network error. Check your connection and try again.';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Submit application';
+      }
+    });
+  </script>
+</body>
+</html>

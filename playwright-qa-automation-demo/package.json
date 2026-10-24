@@ -1,0 +1,25 @@
+{
+  "name": "playwright-qa-automation-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright end-to-end and API test suite for a demo login, permissions and onboarding app, running in GitHub Actions.",
+  "author": "Kalu Ifeanyi Obinna (Charles)",
+  "license": "MIT",
+  "scripts": {
+    "start": "node app/server.js",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed --project=desktop-chrome",
+    "test:ui": "playwright test --ui",
+    "test:api": "playwright test tests/api.spec.ts --project=desktop-chrome",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2"
+  }
+}
