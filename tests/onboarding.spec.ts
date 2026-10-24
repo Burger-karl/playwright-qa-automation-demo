@@ -50,7 +50,7 @@ test.describe('Applicant onboarding', () => {
 
       await expect(onboardingPage.fieldError(field)).toHaveText(error);
       await expect(onboardingPage.input(field)).toHaveAttribute('aria-invalid', 'true');
-      await expect(onboardingPage.successMessage).toBeEmpty();
+      await expect(onboardingPage.successMessage).toBeHidden();
     });
   }
 
@@ -58,7 +58,7 @@ test.describe('Applicant onboarding', () => {
     await onboardingPage.submit(buildApplicant(), { acceptTerms: false });
 
     await expect(onboardingPage.fieldError('consent')).toHaveText('You must accept the terms.');
-    await expect(onboardingPage.successMessage).toBeEmpty();
+    await expect(onboardingPage.successMessage).toBeHidden();
   });
 
   test('prevents a duplicate applicant with the same email', async ({ onboardingPage }) => {
@@ -71,7 +71,7 @@ test.describe('Applicant onboarding', () => {
     await onboardingPage.submit({ ...applicant, email: applicant.email.toUpperCase() });
 
     await expect(onboardingPage.fieldError('email')).toHaveText('An applicant with this email already exists.');
-    await expect(onboardingPage.successMessage).toBeEmpty();
+    await expect(onboardingPage.successMessage).toBeHidden();
   });
 
   test('sends only one request when the submit button is double-clicked', async ({ page, onboardingPage }) => {

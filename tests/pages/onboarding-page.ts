@@ -18,7 +18,9 @@ export class OnboardingPage {
     this.track = page.getByLabel('Track');
     this.consent = page.getByLabel('I agree to the programme terms');
     this.submitButton = page.getByRole('button', { name: 'Submit application' });
-    this.successMessage = page.getByRole('status');
+    // Located by id, not getByRole: role locators skip hidden elements, and the
+    // banner is hidden while empty, which is exactly when negative tests check it.
+    this.successMessage = page.locator('#form-success');
     this.errorAlert = page.locator('#form-error');
   }
 

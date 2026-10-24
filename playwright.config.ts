@@ -5,6 +5,9 @@ const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './tests',
+  // Headroom for slow machines and cold browser starts (first run on Windows is slow).
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
   fullyParallel: true,
   forbidOnly: isCI, // fail CI if a test.only is committed by mistake
   retries: isCI ? 2 : 0,
@@ -17,7 +20,8 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    // Recording every test's video adds a lot of CPU load; record only on retries.
+    video: 'on-first-retry',
   },
 
   projects: [
